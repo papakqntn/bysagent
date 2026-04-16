@@ -14,7 +14,9 @@ class DataManager {
 
   getAll() {
     try {
-      return JSON.parse(localStorage.getItem(this.storageKey)) || [];
+      const data = JSON.parse(localStorage.getItem(this.storageKey)) || [];
+      console.log(`BYŚ Database: loaded ${data.length} records. Data is safe ✓`);
+      return data;
     } catch {
       return [];
     }

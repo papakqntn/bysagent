@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bys-agent-v5';
+const CACHE_NAME = 'bys-agent-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

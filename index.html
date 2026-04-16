@@ -291,11 +291,14 @@
   <!-- ═══ TOAST ═══ -->
   <div class="toast" id="toast"></div>
 
-  <!-- ═══ BYSEK ASSISTANT ═══ -->
+  <!-- ═══ BYSEK ASSISTANT TRIGGER ═══ -->
   <button id="bysek-trigger" class="bysek-trigger" onclick="bysek.toggleAssistant()" title="AI Asystent BYSEK">
     <div class="bysek-icon">🤖</div>
     <div class="bysek-pulse"></div>
   </button>
+
+  <!-- ═══ TOAST ═══ -->
+  <div class="toast" id="toast"></div>
 
   <div class="bysek-modal" id="bysek-modal">
     <div class="bysek-content">
@@ -306,6 +309,12 @@
       
       <div class="bysek-visualizer">
         <div id="bysek-result" class="bysek-result"></div>
+        
+        <!-- Keyboard dictation workaround for iOS PWA -->
+        <div class="bysek-input-area">
+          <input type="text" id="bysek-stt-input" class="bysek-stt-input" placeholder="Stuknij tutaj i użyj mikrofonu..." autocomplete="off">
+        </div>
+
         <button id="bysek-mic-btn" class="bysek-mic-btn" onclick="bysek.startListening()">
           <span class="mic-icon">🎤</span>
         </button>

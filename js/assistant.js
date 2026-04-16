@@ -59,9 +59,16 @@ class BysekAssistant {
     const modal = document.getElementById('bysek-modal');
     modal.classList.add('visible');
     
+    // Focus the hidden/stt input for keyboard dictation workaround
+    const sttInput = document.getElementById('bysek-stt-input');
+    sttInput.value = '';
+    
     // Check if in PWA mode on iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    // Small delay to ensure modal is rendering before focus
+    setTimeout(() => sttInput.focus(), 300);
 
     if (isIOS && isStandalone) {
       this.updateUI('ios-warning');
@@ -71,6 +78,20 @@ class BysekAssistant {
       this.updateUI('idle');
       this.speak('Cześć! Podaj adres, którego szukasz.');
     }
+
+    // Setup input listener for keyboard dictation
+    if (!this.inputHandlerSet) {
+      sttInput.addEventListener('input', (e) => {
+        const text = e.target.value;
+        if (text.length > 3) {
+          clearTimeout(this.searchDebounce);
+          this.searchDebounce = setTimeout(() => {
+            this.processVoiceCommand(text);
+          }, 800);
+        }
+      });
+      this.inputHandlerSet = true;
+    }
   }
 
   close() {
@@ -78,6 +99,7 @@ class BysekAssistant {
     modal.classList.remove('visible');
     if (this.recognition) this.recognition.stop();
     this.isListening = false;
+    document.getElementById('bysek-stt-input').blur();
   }
 
   startListening() {
@@ -86,6 +108,8 @@ class BysekAssistant {
   }
 
   processVoiceCommand(text) {
+    if (this.processingResult) return;
+    
     this.processingResult = true;
     this.updateUI('processing', text);
 
@@ -111,13 +135,22 @@ class BysekAssistant {
           this.close();
           listView.showDetail(bestMatch.id);
           app.data.addToRecent(bestMatch.id);
+          this.processingResult = false;
         }, 1500);
       } else {
         this.speak('Niestety nie znalazłem takiego adresu. Spróbuj powtórzyć.');
         this.updateUI('not-found', text);
-        this.processingResult = false;
+        
+        // Reset after a delay so they can try again
+        setTimeout(() => {
+          this.processingResult = false;
+          if (document.getElementById('bysek-modal').classList.contains('visible')) {
+            this.updateUI('idle');
+            document.getElementById('bysek-stt-input').value = '';
+          }
+        }, 3000);
       }
-    }, 1000);
+    }, 800);
   }
 
   speak(text) {
@@ -135,21 +168,23 @@ class BysekAssistant {
     const statusText = document.getElementById('bysek-status');
     const micBtn = document.getElementById('bysek-mic-btn');
     const resultText = document.getElementById('bysek-result');
+    const sttInput = document.getElementById('bysek-stt-input');
 
     // Reset classes
     micBtn.className = 'bysek-mic-btn';
     
     switch (state) {
       case 'idle':
-        statusText.textContent = 'Naciśnij mikrofon и powiedz adres';
+        statusText.textContent = 'Powiedz lub wpisz adres:';
         resultText.textContent = '';
+        sttInput.placeholder = 'Stuknij tutaj i użyj mikrofonu...';
         break;
       case 'listening':
         statusText.textContent = 'Słucham...';
         micBtn.classList.add('active');
         break;
       case 'processing':
-        statusText.textContent = 'Przetwarzam...';
+        statusText.textContent = 'Szukam w bazie...';
         resultText.textContent = `"${extra}"`;
         break;
       case 'success':
@@ -161,18 +196,18 @@ class BysekAssistant {
         resultText.innerHTML = `<span style="color:var(--danger)">"${extra}"</span>`;
         break;
       case 'ios-warning':
-        statusText.innerHTML = '<span style="color:var(--warning)">Błąd системы:</span>';
-        resultText.innerHTML = '<div style="font-size:0.85rem;line-height:1.4">Apple blokuje mikrofon w trybie "Ekranu Głównego".<br><br>Otwórz aplikację <b>w Safari</b> lub użyj dyktowania na klawiaturze в polu wyszukiwania.</div>';
+        statusText.innerHTML = '<span style="color:var(--warning)">PWA Mode:</span> Użyj mikrofonu na klawiaturze:';
+        resultText.innerHTML = '';
         micBtn.style.display = 'none';
         break;
       case 'not-supported':
-        statusText.textContent = 'Głos nie jest wspierany';
-        resultText.textContent = 'Twoja przeglądarka nie obsługuje rozpoznawania głosu.';
+        statusText.textContent = 'Tryb manualny:';
+        resultText.textContent = 'Wpisz adres poniżej:';
         micBtn.style.display = 'none';
         break;
       case 'error':
-        statusText.textContent = 'Błąd mikrofonu';
-        resultText.textContent = 'Upewnij się, że masz włączony internet i Siri.';
+        statusText.textContent = 'Użyj klawiatury:';
+        resultText.textContent = 'Dyktuj w polu poniżej';
         break;
     }
   }
