@@ -164,15 +164,96 @@ class App {
     input.value = '';
   }
 
-  // ─── Service Worker ────────────────────────────────────
-
+  // ─── Service Worker & Updates ──────────────────────────
+  
   registerSW() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('sw.js')
-        .then(() => console.log('Service Worker registered'))
+        .then((reg) => {
+          console.log('Service Worker registered');
+          this.swRegistration = reg;
+          
+          // Listen for new worker waiting
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New update available, we'll handle it via manual check or automatic reload
+                console.log('New update installed and waiting');
+              }
+            });
+          });
+        })
         .catch((err) => console.warn('SW registration failed:', err));
+
+      // Handle reload when new SW takes control
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
     }
+  }
+
+  async checkUpdate() {
+    if (!this.swRegistration) {
+      this.showToast('Aktualizacja niemożliwa (brak SW)', 'error');
+      return;
+    }
+
+    const statusEl = document.getElementById('update-status');
+    const updateBtn = document.getElementById('btn-update');
+
+    updateBtn.disabled = true;
+    this.showUpdateStatus('<span class="spin">🔄</span> Sprawdzanie...');
+
+    try {
+      // Trigger update check
+      await this.swRegistration.update();
+      
+      // Wait a bit to see if updatefound was triggered
+      setTimeout(() => {
+        if (this.swRegistration.installing || this.swRegistration.waiting) {
+          this.showUpdateStatus('⚙️ Pobieranie aktualizacji...');
+          
+          // If already waiting, skip
+          const worker = this.swRegistration.waiting || this.swRegistration.installing;
+          if (worker.state === 'installed') {
+            this.applyUpdate(worker);
+          } else {
+            worker.addEventListener('statechange', () => {
+              if (worker.state === 'installed') {
+                this.applyUpdate(worker);
+              }
+            });
+          }
+        } else {
+          this.showUpdateStatus('✅ Wersja aktualna', 'success');
+          updateBtn.disabled = false;
+          setTimeout(() => statusEl.classList.remove('visible'), 3000);
+        }
+      }, 1500);
+
+    } catch (e) {
+      console.error('Update check failed:', e);
+      this.showUpdateStatus('❌ Błąd sprawdzania', 'error');
+      updateBtn.disabled = false;
+    }
+  }
+
+  applyUpdate(worker) {
+    this.showUpdateStatus('✨ Instalowanie... Zapraszam ponownie!');
+    setTimeout(() => {
+      worker.postMessage({ type: 'SKIP_WAITING' });
+    }, 1000);
+  }
+
+  showUpdateStatus(html, type = '') {
+    const el = document.getElementById('update-status');
+    el.innerHTML = html;
+    el.className = 'update-status visible' + (type ? ` ${type}` : '');
   }
 }
 

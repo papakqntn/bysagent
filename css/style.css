@@ -255,6 +255,23 @@ a {
   flex: 1;
 }
 
+.version-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin-top: -10px;
+  margin-bottom: 5px;
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .home-card-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -405,6 +422,35 @@ a {
 .home-footer-btn:active {
   color: var(--primary);
   background: var(--primary-light);
+}
+
+.update-status {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  height: 20px;
+  transition: all var(--transition-normal);
+  opacity: 0;
+}
+
+.update-status.visible {
+  opacity: 1;
+}
+
+.update-status.success {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.update-status .spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 }
 
 /* ── HEADER BAR ────────────────────────────────────────── */

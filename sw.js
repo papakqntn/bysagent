@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bys-agent-v3';
+const CACHE_NAME = 'bys-agent-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -22,12 +22,24 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// Handle skipWaiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Clearing old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
       );
     })
   );

@@ -91,7 +91,11 @@
       <button class="home-footer-btn" id="btn-import" onclick="document.getElementById('import-input').click()">
         📥 Import
       </button>
+      <button class="home-footer-btn" id="btn-update" onclick="app.checkUpdate()">
+        🔄 Aktualizacja
+      </button>
     </div>
+    <div id="update-status" class="update-status"></div>
     <input type="file" id="import-input" accept=".json" onchange="app.importData(this)">
   </div>
 
