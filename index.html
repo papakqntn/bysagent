@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0066B2">
+  <meta name="description" content="BYŚ Agent — aplikacja pomocnicza dla kierowców BYŚ Recykling. Adresy, kody dostępu, kontakty.">
+
+  <!-- PWA / iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BYŚ Agent">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="manifest" href="manifest.json">
+
+  <title>BYŚ Agent</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- MapLibre GL JS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <!-- App Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ═══ HOME VIEW ═══ -->
+  <div id="home-view" class="view active">
+    <img src="assets/logo.png" alt="BYŚ Recykling" class="home-logo" id="home-logo">
+    <p class="home-subtitle">Agent Terenowy</p>
+
+    <div class="home-cards">
+      <button class="home-card" id="btn-map" onclick="app.navigateTo('map')">
+        <div class="home-card-icon">🗺️</div>
+        <div class="home-card-content">
+          <div class="home-card-title">Mapa</div>
+          <div class="home-card-desc">Przeglądaj adresy na mapie 3D z widokiem budynków</div>
+        </div>
+        <span class="home-card-arrow">›</span>
+      </button>
+
+      <button class="home-card" id="btn-list" onclick="app.navigateTo('list')">
+        <div class="home-card-icon">📋</div>
+        <div class="home-card-content">
+          <div class="home-card-title">Lista</div>
+          <div class="home-card-desc">Szukaj adresów, kody dostępu i kontakty</div>
+        </div>
+        <span class="home-card-arrow">›</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="home-section" id="home-stats">
+      <div class="home-section-title">Statystyki</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Adresów</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-codes">0</div>
+          <div class="stat-label">Z kodami</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-fav">0</div>
+          <div class="stat-label">Ulubionych</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Addresses -->
+    <div class="home-section" id="home-recent-section">
+      <div class="home-section-title">Ostatnio przeglądane</div>
+      <div class="recent-list" id="home-recent-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Footer actions -->
+    <div class="home-footer">
+      <button class="home-footer-btn" id="btn-export" onclick="app.exportData()">
+        📤 Eksport
+      </button>
+      <button class="home-footer-btn" id="btn-import" onclick="document.getElementById('import-input').click()">
+        📥 Import
+      </button>
+    </div>
+    <input type="file" id="import-input" accept=".json" onchange="app.importData(this)">
+  </div>
+
+  <!-- ═══ MAP VIEW ═══ -->
+  <div id="map-view" class="view">
+    <div id="map-container"></div>
+
+    <!-- Map loading -->
+    <div class="map-loading" id="map-loading">
+      <div class="spinner"></div>
+      <div class="map-loading-text">Ładowanie mapy...</div>
+    </div>
+
+    <!-- Map header overlay -->
+    <div class="map-header">
+      <button class="map-back-btn" id="map-back-btn" onclick="app.navigateTo('home')">‹</button>
+      <input
+        type="text"
+        class="map-search"
+        id="map-search-input"
+        placeholder="Szukaj adresu na mapie..."
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- Map controls -->
+    <div class="map-controls">
+      <button class="map-control-btn" id="btn-geolocate" onclick="mapView.geolocate()" title="Moja lokalizacja">📍</button>
+      <button class="map-control-btn" id="btn-reset-view" onclick="mapView.resetView()" title="Resetuj widok">🏠</button>
+      <button class="map-control-btn" id="btn-toggle-3d" onclick="mapView.toggle3D()" title="Widok 3D/2D">🏗️</button>
+    </div>
+
+    <!-- Map popup -->
+    <div class="map-popup" id="map-popup">
+      <div class="map-popup-header">
+        <div>
+          <div class="map-popup-address" id="popup-address"></div>
+          <div class="map-popup-district" id="popup-district"></div>
+        </div>
+        <button class="map-popup-close" onclick="mapView.closePopup()">✕</button>
+      </div>
+      <div class="map-popup-info" id="popup-info">
+        <!-- Populated by JS -->
+      </div>
+      <button class="map-popup-btn" id="popup-detail-btn">Szczegóły</button>
+    </div>
+  </div>
+
+  <!-- ═══ LIST VIEW ═══ -->
+  <div id="list-view" class="view">
+    <div class="header-bar">
+      <button class="header-back" id="list-back-btn" onclick="app.navigateTo('home')">‹</button>
+      <div class="header-title">Adresy</div>
+      <button class="header-action" id="btn-sort" onclick="listView.toggleSort()" title="Sortuj">↕️</button>
+    </div>
+
+    <div class="list-search-wrap">
+      <div class="list-search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="list-search"
+          id="list-search-input"
+          placeholder="Szukaj adresu..."
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <div class="list-filters">
+      <button class="filter-tab active" data-filter="all" onclick="listView.setFilter('all', this)">Wszystkie</button>
+      <button class="filter-tab" data-filter="favorites" onclick="listView.setFilter('favorites', this)">⭐ Ulubione</button>
+      <button class="filter-tab" data-filter="praga-polnoc" onclick="listView.setFilter('praga-polnoc', this)">Praga-Północ</button>
+      <button class="filter-tab" data-filter="praga-poludnie" onclick="listView.setFilter('praga-poludnie', this)">Praga-Południe</button>
+    </div>
+
+    <div class="address-list" id="address-list">
+      <!-- Populated by JS -->
+    </div>
+
+    <button class="fab" id="fab-add" onclick="listView.showAddModal()">+</button>
+  </div>
+
+  <!-- ═══ DETAIL MODAL ═══ -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div>
+          <div class="modal-address-title" id="detail-title"></div>
+          <div class="modal-address-district" id="detail-district"></div>
+        </div>
+        <button class="modal-close" onclick="listView.closeDetail()">✕</button>
+      </div>
+      <div class="detail-body" id="detail-body">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EDIT MODAL ═══ -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div>
+          <div class="modal-address-title" id="edit-modal-title">Nowy adres</div>
+        </div>
+        <button class="modal-close" onclick="listView.closeEdit()">✕</button>
+      </div>
+      <div class="edit-body">
+        <form id="edit-form" onsubmit="listView.saveForm(event)">
+          <input type="hidden" id="edit-id">
+
+          <div class="form-row">
+            <div class="form-group" style="flex: 2">
+              <label class="form-label" for="edit-street">Ulica</label>
+              <input class="form-input" type="text" id="edit-street" placeholder="np. ul. Targowa" required>
+            </div>
+            <div class="form-group" style="flex: 1">
+              <label class="form-label" for="edit-house">Nr domu</label>
+              <input class="form-input" type="text" id="edit-house" placeholder="np. 15" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-city">Miasto</label>
+              <input class="form-input" type="text" id="edit-city" placeholder="Warszawa" value="Warszawa">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-district">Dzielnica</label>
+              <input class="form-input" type="text" id="edit-district" placeholder="np. Praga-Północ">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="edit-gate">Kod bramy / furtki</label>
+              <input class="form-input" type="text" id="edit-gate" placeholder="np. 1234#">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="edit-intercom">Kod domofonu</label>
+              <input class="form-input" type="text" id="edit-intercom" placeholder="np. 15*9">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-phone">Telefon administracji</label>
+            <input class="form-input" type="tel" id="edit-phone" placeholder="+48 ...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-contact">Osoba kontaktowa</label>
+            <input class="form-input" type="text" id="edit-contact" placeholder="np. Pan Kowalski (dozorca)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-lat">Współrzędne (opcjonalnie)</label>
+            <div class="form-row">
+              <input class="form-input" type="text" id="edit-lat" placeholder="Szerokość (lat)">
+              <input class="form-input" type="text" id="edit-lng" placeholder="Długość (lng)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="edit-notes">Notatki</label>
+            <textarea class="form-textarea" id="edit-notes" placeholder="Dodatkowe informacje..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="form-btn cancel" onclick="listView.closeEdit()">Anuluj</button>
+            <button type="submit" class="form-btn save">Zapisz</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONFIRM DIALOG ═══ -->
+  <div class="confirm-overlay" id="confirm-dialog">
+    <div class="confirm-dialog">
+      <div class="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title">Usunąć adres?</div>
+      <div class="confirm-message" id="confirm-message">Tej operacji nie można cofnąć.</div>
+      <div class="confirm-actions">
+        <button class="confirm-btn no" id="confirm-no">Anuluj</button>
+        <button class="confirm-btn yes" id="confirm-yes">Usuń</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST ═══ -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/list.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

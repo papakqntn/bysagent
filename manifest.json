@@ -1,0 +1,20 @@
+{
+  "name": "BYŚ Agent",
+  "short_name": "BYŚ",
+  "description": "Aplikacja pomocnicza dla kierowców BYŚ Recykling — adresy, kody dostępu, kontakty",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0066B2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "utilities"],
+  "lang": "pl"
+}
