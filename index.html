@@ -291,6 +291,30 @@
   <!-- ═══ TOAST ═══ -->
   <div class="toast" id="toast"></div>
 
+  <!-- ═══ BYSEK ASSISTANT ═══ -->
+  <button id="bysek-trigger" class="bysek-trigger" onclick="bysek.toggleAssistant()" title="AI Asystent BYSEK">
+    <div class="bysek-icon">🤖</div>
+    <div class="bysek-pulse"></div>
+  </button>
+
+  <div class="bysek-modal" id="bysek-modal">
+    <div class="bysek-content">
+      <button class="bysek-close" onclick="bysek.close()">✕</button>
+      <div class="bysek-robot">🤖</div>
+      <h3 class="bysek-title">BYSEK</h3>
+      <p class="bysek-status" id="bysek-status">Cześć! W czym mogę pomóc?</p>
+      
+      <div class="bysek-visualizer">
+        <div id="bysek-result" class="bysek-result"></div>
+        <button id="bysek-mic-btn" class="bysek-mic-btn" onclick="bysek.startListening()">
+          <span class="mic-icon">🎤</span>
+        </button>
+      </div>
+      
+      <div class="bysek-footer">Asystent Głosowy BYŚ Agent</div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Scripts -->
@@ -298,6 +322,7 @@
 <script src="js/map.js"></script>
 <script src="js/list.js"></script>
 <script src="js/app.js"></script>
+<script src="js/assistant.js"></script>
 
 </body>
 </html>

@@ -1578,3 +1578,189 @@ a {
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ── BYSEK ASSISTANT ─────────────────────────────────── */
+.bysek-trigger {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 90px);
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: white;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 45;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  animation: bysekFloat 3s ease-in-out infinite;
+}
+
+.bysek-trigger:active {
+  transform: scale(0.9);
+}
+
+.bysek-icon {
+  font-size: 24px;
+  z-index: 2;
+}
+
+.bysek-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  opacity: 0.1;
+  animation: bysekPulse 2s ease-out infinite;
+}
+
+@keyframes bysekFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes bysekPulse {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.bysek-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 52, 102, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-normal);
+  padding: 20px;
+}
+
+.bysek-modal.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.bysek-content {
+  width: 100%;
+  max-width: 340px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  padding: 40px 24px 30px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  transform: scale(0.9) translateY(20px);
+  transition: all var(--transition-normal);
+  border: 1px solid white;
+}
+
+.bysek-modal.visible .bysek-content {
+  transform: scale(1) translateY(0);
+}
+
+.bysek-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.bysek-robot {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+.bysek-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.bysek-status {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bysek-visualizer {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 24px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.bysek-result {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-style: italic;
+  min-height: 24px;
+}
+
+.bysek-mic-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border: none;
+  box-shadow: var(--shadow-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.bysek-mic-btn.active {
+  background: var(--danger);
+  animation: micPulse 1s infinite;
+}
+
+@keyframes micPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.bysek-footer {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
