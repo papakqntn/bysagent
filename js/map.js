@@ -173,12 +173,17 @@ class MapView {
   }
 
   addMarker(addr) {
-    // Create custom marker element
+    // Create container element (MapLibre will manage its position)
+    const container = document.createElement('div');
+    container.className = 'map-marker-container';
+
+    // Create the visual pin element (CSS will manage its look and rotation)
     const el = document.createElement('div');
     el.className = 'map-marker' + (addr.isFavorite ? ' favorite' : '');
     el.title = `${addr.street} ${addr.houseNumber}`;
+    container.appendChild(el);
 
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+    const marker = new maplibregl.Marker({ element: container, anchor: 'bottom' })
       .setLngLat([addr.lng, addr.lat])
       .addTo(this.map);
 
